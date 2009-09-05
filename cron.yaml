@@ -1,0 +1,15 @@
+cron:
+- description: Daily report pull
+  url: /jobs/pull_report
+  schedule: every day 06:00
+  timezone: Australia/Sydney
+
+- description: Rankings pull
+  url: /jobs/pull_rankings
+  schedule: every 8 hours   # Must be larger than 1 hour, see email_report.py
+  timezone: Australia/Sydney
+
+- description: Daily report email push
+  url: /jobs/email_report
+  schedule: every day 07:00
+  timezone: Australia/Sydney

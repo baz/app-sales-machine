@@ -1,0 +1,28 @@
+application: appsalesmachine
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /stylesheets
+  static_dir: stylesheets
+
+- url: /jobs/pull_rankings
+  script: /jobs/pull_rankings.py
+  login: admin
+
+- url: /jobs/pull_rankings/worker
+  script: /jobs/pull_rankings.py
+  login: admin
+
+- url: /jobs/pull_report
+  script: /jobs/pull_report.py
+  login: admin
+
+- url: /jobs/email_report
+  script: /jobs/email_report.py
+  login: admin
+
+- url: .*
+  script: main.py
+  login: admin

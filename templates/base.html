@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+	<title>{{ company_name }} - {{ page_name }}</title>
+</style>
+</head>
+<body>
+<div id="contents">
+	<h2>{{ company_name }} - {{ page_name}}</h2>
+
+	<div class="container">
+		<div class="content">
+			{% block content %}
+			{% endblock %}
+		</div>
+
+		<hr>
+	</div>
+</div>
+</body>
+</html>

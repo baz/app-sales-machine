@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+	{% if file_name %}
+		<h3>Successfully uploaded: {{ file_name }}</h3>
+	{% endif %}
+
+	<p>Upload a tarball (.tar, .tar.gz, .tar.bz2) containing a flat structure of reports (weekly or daily).</p>
+
+	<form action="/admin/upload" enctype="multipart/form-data" method="post">
+		<input type="file" name="{{ file_upload_name }}" />
+		<input type="submit" value="Upload" />
+	</form>
+
+{% endblock %}

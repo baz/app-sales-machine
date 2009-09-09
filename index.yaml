@@ -10,28 +10,35 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used 5 times in query history.
+# Used 36 times in query history.
 - kind: Ranking
   properties:
   - name: pid
   - name: date_created
     direction: desc
 
-# Used 27 times in query history.
+# Used 253 times in query history.
 - kind: Sale
   properties:
   - name: pid
   - name: report_date
 
-# Used 5 times in query history.
+# Used 36 times in query history.
 - kind: Sale
   properties:
   - name: pid
   - name: report_date
     direction: desc
 
-# Used 5 times in query history.
+# Used 72 times in query history.
 - kind: Upgrade
   properties:
   - name: pid
   - name: report_date
+
+# Unused in query history -- copied from input.
+- kind: Upgrade
+  properties:
+  - name: pid
+  - name: report_date
+    direction: desc

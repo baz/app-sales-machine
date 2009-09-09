@@ -1,0 +1,55 @@
+<html>
+	<p>Hello,</p>
+
+	<p>Here is your daily report for <b>{{ name }}</b></p>
+
+	<h3>Figures</h3>
+
+	<p>Yesterday's ({{ sales_end }}) downloads:</p>
+	<p> - <b>{{ last_reported_sales_total }}</b></p>
+
+	<p>Yesterday's ({{ sales_end }}) upgrades:</p>
+	<p> - <b>{{ last_reported_upgrades_total }}</b></p>
+
+	<p>Total number of downloads ({{ sales_start }} to {{ sales_end }}):</p>
+	<p> - <b>{{ sales_total }}</b></p>
+
+	<p>Total number of upgrades ({{ upgrades_start }} to {{ upgrades_end }}):</p>
+	<p> - <b>{{ upgrades_total }}</b></p>
+
+	<p>Upgrade rate (over base of {{ upgrade_base }}):</p>
+	<p> - <b>{{ upgrade_rate }}</b></p>
+
+	<p>Approximate total income revenue ({{ currency }}):</p>
+	<p> - <b>{{ sales_total_revenue }}</b></p>
+
+	<p>Rankings (as of {{ rankings_pull_date }} UTC):</p>
+
+	{% if rankings %}
+		<table width="50%">
+			<tr align="left">
+				<th>Country</th>
+				<th>Category</th>
+				<th>Ranking</th>
+			</tr>
+			{% for ranking in rankings %}
+			<tr>
+				<td>{{ ranking.country }}</td>
+				<td>{{ ranking.category }}</td>
+				<td>{{ ranking.ranking }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	{% else %}
+		<p><i>No rankings available.</i></p>
+	{% endif %}
+
+	<h3>Graphs</h3>
+	<h4>Overall Sales and Upgrades</h4>
+	<img src="{{ overall_chart_url }}"/ >
+	<br />
+
+	<h4>Previous Fortnight's Sales and Upgrades</h4>
+	<img src="{{ concentrated_chart_url }}" />
+
+</html>

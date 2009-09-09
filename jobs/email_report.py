@@ -4,12 +4,21 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.api.labs import taskqueue
+from google.appengine.ext.webapp import template
 import datetime
 import string
 import locale
+import sys
+import os
 
 import settings
 import models.data
+
+# Append lib path to sys.path for Graphy
+sys.path.insert(0, settings.APP_ROOT_DIR + '/lib')
+from graphy.backends import google_chart_api
+from graphy import formatters
+from graphy import line_chart
 
 
 class EmailReport(webapp.RequestHandler):
@@ -89,6 +98,7 @@ class EmailReport(webapp.RequestHandler):
 					dict = {'country': ranking.country, 'category': ranking.category, 'ranking': ranking.ranking}
 					rankings.append(dict)
 
+			overall_chart_url, concentrated_chart_url = self.units_chart(pid)
 			product = {
 					'name': product_name,
 					'last_reported_sales_total': last_reported_sales_total,
@@ -104,10 +114,13 @@ class EmailReport(webapp.RequestHandler):
 					'upgrade_base': self._format_number(upgrade_base),
 					'currency': settings.SETTINGS['base_currency'],
 					'rankings_pull_date': last_pull_date,
-					'rankings': self._rankings_string(rankings),
+					'rankings': rankings,
+					'overall_chart_url': overall_chart_url,
+					'concentrated_chart_url': concentrated_chart_url,
 					}
 
-			email_body = self._email_body(product)
+			path = os.path.join(settings.SETTINGS['template_path'], 'report.html')
+			email_body = template.render(path, product)
 
 			subject = '%s %s App Store report' % (datetime.date.today().strftime('%Y%m%d'), product['name'])
 			self.send_email(pid, subject, email_body)
@@ -118,36 +131,6 @@ class EmailReport(webapp.RequestHandler):
 			total += report.income_units
 		return total
 
-	def _email_body(self, product):
-		body_template = string.Template("""Hello,
-
-Here is your daily report for $name
---
-
-Yesterday's ($sales_end) download figures:
-	- $last_reported_sales_total
-
-Yesterday's ($sales_end) upgrade figures:
-	- $last_reported_upgrades_total
-
-Total number of downloads ($sales_start to $sales_end):
-	- $sales_total
-
-Total number of upgrades ($upgrades_start to $upgrades_end):
-	- $upgrades_total
-
-Upgrade rate (over base of $upgrade_base):
-	- $upgrade_rate
-
-Approximate total income revenue ($currency):
-	- $sales_total_revenue
-
-Rankings (as of $rankings_pull_date UTC):
-
-$rankings
-""")
-		return body_template.substitute(product)
-
 	def _date_string(self, date):
 		return date.strftime('%Y-%m-%d')
 
@@ -155,23 +138,120 @@ $rankings
 		locale.setlocale(locale.LC_ALL,"")
 		return locale.format('%d', number, True)
 
-	def _rankings_string(self, rankings):
-		body = ''
-		separator_width = 25
-		header = 'Country'.ljust(separator_width, ' ') + 'Category'.ljust(separator_width, ' ') + 'Ranking'.ljust(separator_width, ' ')
-		body += '\t' + header + '\n'
-		header_underline = '-------'.ljust(separator_width, ' ') + '--------'.ljust(separator_width, ' ') + '-------'.ljust(separator_width, ' ')
-		body += '\t' + header_underline + '\n'
-		for ranking in rankings:
-			row = ranking['country'].ljust(separator_width, ' ') + ranking['category'].ljust(separator_width, ' ') + str(ranking['ranking']).ljust(separator_width, ' ')
-			body += '\t' + row + '\n'
-		return body
+	def units_chart(self, pid):
+		overall_chart = google_chart_api.LineChart()
+
+		sales_query = db.Query(models.data.Sale)
+		sales_query.filter('pid =', pid)
+		sales_query.order('report_date')
+		sales = []
+		for sale in sales_query:
+			sales.append([sale.income_units, sale.report_date])
+		sales, dates = zip(*sales)
+
+		# Make dates readable
+		dates = [date.strftime('%d %b') for date in dates]
+
+		# Add sales line
+		overall_chart.AddLine(sales, width=line_chart.LineStyle.THICK, label='Sales')
+
+		# Determine if an upgrades line needs to be drawn
+		sales_start = sales_query.get().report_date
+		# Use settings file as the definitive source of upgrade start date because iTunes Connect sometimes reports false upgrade numbers
+		versions = settings.PRODUCTS[pid]['versions']
+		if len(versions) > 1:
+			# Convert to datetime to allow for timedelta calculation
+			upgrades_start = datetime.datetime.combine(versions[1]['date'], datetime.time(sales_start.hour, sales_start.minute))
+			difference_in_days = (upgrades_start - sales_start).days
+
+			upgrades_query = db.Query(models.data.Upgrade)
+			upgrades_query.filter('pid =', pid)
+			upgrades_query.order('report_date')
+			upgrades_query.filter('report_date >', upgrades_start)
+			upgrades = []
+
+			# Pad upgrades list with time before upgrade commenced
+			for i in range(0, difference_in_days):
+				upgrades.append(0)
+			for upgrade in upgrades_query:
+				upgrades.append(upgrade.income_units)
+
+			# Add upgrades line
+			overall_chart.AddLine(upgrades, width=line_chart.LineStyle.THICK, label='Upgrades')
+
+		# Add horizontal labels
+		max_num_horizontal_labels = 15
+		segment_gap = 1
+		if len(dates) > max_num_horizontal_labels:
+			segment_gap = len(dates) / max_num_horizontal_labels
+
+		overall_chart.bottom.min = 0
+		overall_chart.bottom.max = max_num_horizontal_labels
+		overall_chart.bottom.labels = dates
+		overall_chart.bottom.labels = dates[::segment_gap]
+
+		# Add vertical labels
+		max_num_vertical_labels = 15
+		overall_chart.left.min = 0
+		overall_chart.left.max = max(upgrades) if max(upgrades) > max(sales) else max(sales)
+		vertical_labels = []
+		segment_gap = overall_chart.left.max / max_num_vertical_labels
+		for i in range(0, max_num_vertical_labels + 1):
+			vertical_labels.append(i * segment_gap)
+			if len(vertical_labels) == max_num_vertical_labels + 1: break
+
+		overall_chart.left.labels = vertical_labels
+		overall_chart.bottom.label_gridlines = True
+
+		# Build concentrated chart if there is enough data for one
+		concentrated_chart = self.concentrated_units_chart(sales, upgrades, dates)
+		if concentrated_chart != None:
+			concentrated_chart = concentrated_chart.display.Url(1000, 300)
+
+		return (overall_chart.display.Url(1000, 300), concentrated_chart)
+
+	def concentrated_units_chart(self, sales, upgrades, dates):
+		# Want results for the last 2 weeks
+		concentrated_result_set_num = 14
+		concentrated_chart = None
+		if len(sales) > concentrated_result_set_num:
+			concentrated_chart = google_chart_api.LineChart()
+			# Slice to create the line for the concentrated chart
+			calc_concentrated_result_set = lambda x: x[len(sales) - concentrated_result_set_num :len(sales)]
+			sales_concentrated = calc_concentrated_result_set(sales)
+			dates_concentrated = calc_concentrated_result_set(dates)
+			upgrades_concentrated = calc_concentrated_result_set(upgrades)
+
+			concentrated_chart.AddLine(sales_concentrated, width=line_chart.LineStyle.THICK, label='Sales')
+			if len(upgrades_concentrated) == concentrated_result_set_num - 1:
+				concentrated_chart.AddLine(upgrades_concentrated, width=line_chart.LineStyle.THICK, label='Upgrades')
+
+			concentrated_chart.left.min = 0
+			concentrated_chart.left.max = max(upgrades_concentrated) if max(upgrades_concentrated) > max(sales_concentrated) else max(sales_concentrated)
+			segment_gap = concentrated_chart.left.max / concentrated_result_set_num
+			concentrated_vertical_labels = []
+
+			for i in range(0, concentrated_result_set_num + 1):
+				concentrated_vertical_labels.append(i * segment_gap)
+				if len(concentrated_vertical_labels) == concentrated_result_set_num + 1: break
+			if concentrated_vertical_labels[-1] < concentrated_chart.left.max:
+				new_max = concentrated_vertical_labels[-1] + segment_gap
+				concentrated_vertical_labels.append(new_max)
+				concentrated_chart.left.max = new_max
+
+			concentrated_chart.left.labels = concentrated_vertical_labels
+			concentrated_chart.bottom.labels = dates_concentrated
+			concentrated_chart.left.label_gridlines = True
+			concentrated_chart.bottom.label_gridlines = True
+			return concentrated_chart
+		else:
+			return None
 
 	def send_email(self, pid, subject, email_body):
 		message = mail.EmailMessage(sender=settings.PRODUCTS[pid]['from_address'],
 									subject=subject)
 		message.to = settings.PRODUCTS[pid]['to_addresses']
-		message.body = email_body
+		message.html = email_body
 		message.send()
 
 

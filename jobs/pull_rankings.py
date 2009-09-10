@@ -18,7 +18,7 @@ class RankingsJob(webapp.RequestHandler):
 			# Queue requests for category rankings
 			self.fetch_rankings(pid, category_id)
 			# Queue requests for top 100 list
-			self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['Top 100'])
+			self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['Top 200'])
 
 	def fetch_rankings(self, pid, category_id):
 		app_id = settings.PRODUCTS[pid]['app_id']
@@ -74,7 +74,7 @@ class RankingsWorker(webapp.RequestHandler):
 		user_agent = "iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2"
 		headers = {
 					'User-Agent': user_agent,
-					'X-Apple-Store-Front': "%d-1" % store_id,
+					'X-Apple-Store-Front': "%d-1,5" % store_id,
 					'Cache-Control': 'max-age=0',
 				}
 		response = urlfetch.fetch(url=url,
@@ -82,15 +82,14 @@ class RankingsWorker(webapp.RequestHandler):
 								deadline=10,
 								headers=headers)
 
-		pattern = re.compile(r"<.*?viewSoftware\?id=(\d+).*?draggingName=?([^\"]+)?")
-
+		pattern = re.compile(r"<.*?viewSoftware\?id=(\d+).*?\"><")
 		rankings = pattern.findall(response.content)
-		rankings = rankings[::2]
+
 		rank = 0
 		value = None
 		for app in rankings:
 			rank += 1
-			if int(app[0]) == app_id:
+			if int(app) == app_id:
 				value = rank
 				break
 

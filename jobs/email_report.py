@@ -97,6 +97,7 @@ class EmailReport(webapp.RequestHandler):
 				for ranking in ranking_query:
 					dict = {'country': ranking.country, 'category': ranking.category, 'ranking': ranking.ranking}
 					rankings.append(dict)
+				rankings = sorted(rankings, key=lambda k: k['country'])
 
 			overall_chart_url, concentrated_chart_url = self.units_chart(pid)
 			product = {

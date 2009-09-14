@@ -46,10 +46,18 @@
 
 	<h3>Graphs</h3>
 	<h4>Overall Sales and Upgrades</h4>
-	<img src="{{ overall_chart_url }}"/ >
-	<br />
+	{% if overall_chart_url %}
+		<img src="{{ overall_chart_url }}"/ >
+	{% else %}
+		<p><i>Not enough data for chart generation.</i></p>
+	{% endif %}
+		<br />
 
 	<h4>Previous Fortnight's Sales and Upgrades</h4>
-	<img src="{{ concentrated_chart_url }}" />
+	{% if concentrated_chart_url %}
+		<img src="{{ concentrated_chart_url }}" />
+	{% else %}
+		<p><i>Not enough data for chart generation.</i></p>
+	{% endif %}
 
 </html>

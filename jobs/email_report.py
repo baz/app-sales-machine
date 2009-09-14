@@ -32,20 +32,20 @@ class EmailReport(webapp.RequestHandler):
 			sales_query_asc = db.Query(models.data.Sale)
 			sales_query_asc.filter('pid =', pid)
 			sales_query_asc.order('report_date')
-			if sales_query_asc.get() == None:
-				continue
-			sales_start = sales_query_asc.get().report_date
-			sales_query_desc = db.Query(models.data.Sale)
-			sales_query_desc.filter('pid =', pid)
-			sales_query_desc.order('-report_date')
-			sales_end = sales_query_desc.get().report_date
+			last_reported_sales_total = 0
+			if sales_query_asc.get() != None:
+				sales_start = sales_query_asc.get().report_date
+				sales_query_desc = db.Query(models.data.Sale)
+				sales_query_desc.filter('pid =', pid)
+				sales_query_desc.order('-report_date')
+				sales_end = sales_query_desc.get().report_date
+
+				# Last reported date downloads
+				sales_query_desc.filter('report_date =', sales_end)
+				last_reported_sales_total = self._total_income_units(sales_query_desc)
 
 			# Total number of downloads
 			sales_total = self._total_income_units(sales_query_asc)
-
-			# Last reported date downloads
-			sales_query_desc.filter('report_date =', sales_end)
-			last_reported_sales_total = self._total_income_units(sales_query_desc)
 
 			# Total sales income
 			sales_total_revenue = 0
@@ -78,7 +78,10 @@ class EmailReport(webapp.RequestHandler):
 					# There are more than 2 release so the best we can do is calculate an upgrade rate over all downloads
 					upgrade_base = sales_total
 
-				upgrade_rate = (1.0 * upgrades_total / upgrade_base) * 100
+				if upgrade_base > 0:
+					upgrade_rate = (1.0 * upgrades_total / upgrade_base) * 100
+				else:
+					upgrade_rate = 0
 
 			# Rankings
 			ranking_query = db.Query(models.data.Ranking)
@@ -148,6 +151,8 @@ class EmailReport(webapp.RequestHandler):
 		sales = []
 		for sale in sales_query:
 			sales.append([sale.income_units, sale.report_date])
+
+		if len(sales) == 0: return (None, None)
 		sales, dates = zip(*sales)
 
 		# Make dates readable

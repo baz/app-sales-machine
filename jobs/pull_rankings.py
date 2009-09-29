@@ -74,7 +74,7 @@ class RankingsWorker(webapp.RequestHandler):
 		user_agent = "iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2"
 		headers = {
 					'User-Agent': user_agent,
-					'X-Apple-Store-Front': "%d-1,5" % store_id,
+					'X-Apple-Store-Front': "%d-1" % store_id,
 					'Cache-Control': 'max-age=0',
 				}
 		response = urlfetch.fetch(url=url,
@@ -82,14 +82,15 @@ class RankingsWorker(webapp.RequestHandler):
 								deadline=10,
 								headers=headers)
 
-		pattern = re.compile(r"<.*?viewSoftware\?id=(\d+).*?\"><")
-		rankings = pattern.findall(response.content)
+		pattern = re.compile(r"<.*?viewSoftware\?id=(\d+).*?draggingName=?([^\"]+)?")
 
+		rankings = pattern.findall(response.content)
+		rankings = rankings[::2]
 		rank = 0
 		value = None
 		for app in rankings:
 			rank += 1
-			if int(app) == app_id:
+			if int(app[0]) == app_id:
 				value = rank
 				break
 

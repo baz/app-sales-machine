@@ -27,6 +27,7 @@ class EmailReport(webapp.RequestHandler):
 		products = settings.PRODUCTS.keys()
 		for pid in products:
 			product_name = settings.PRODUCTS[pid]['name']
+			sales_start = sales_end = upgrades_start = upgrades_end = upgrades_total = upgrade_rate = upgrade_base = last_reported_upgrades_total = 0
 
 			# Start and end dates
 			sales_query_asc = db.Query(models.data.Sale)
@@ -54,7 +55,6 @@ class EmailReport(webapp.RequestHandler):
 
 			# Upgrades
 			product_versions = settings.PRODUCTS[pid]['versions']
-			upgrades_start = upgrades_end = upgrades_total = upgrade_rate = upgrade_base = last_reported_upgrades_total = 0
 			if len(product_versions) > 1:
 				upgrades_query = db.Query(models.data.Upgrade)
 				upgrades_query.order('report_date')
@@ -136,7 +136,10 @@ class EmailReport(webapp.RequestHandler):
 		return total
 
 	def _date_string(self, date):
-		return date.strftime('%Y-%m-%d')
+		if date:
+			return date.strftime('%Y-%m-%d')
+		else:
+			return 'Unavailable'
 
 	def _format_number(self, number):
 		locale.setlocale(locale.LC_ALL,"")
@@ -165,6 +168,7 @@ class EmailReport(webapp.RequestHandler):
 		sales_start = sales_query.get().report_date
 		# Use settings file as the definitive source of upgrade start date because iTunes Connect sometimes reports false upgrade numbers
 		versions = settings.PRODUCTS[pid]['versions']
+		upgrades = []
 		if len(versions) > 1:
 			# Convert to datetime to allow for timedelta calculation
 			upgrades_start = datetime.datetime.combine(versions[1]['date'], datetime.time(sales_start.hour, sales_start.minute))
@@ -174,7 +178,6 @@ class EmailReport(webapp.RequestHandler):
 			upgrades_query.filter('pid =', pid)
 			upgrades_query.order('report_date')
 			upgrades_query.filter('report_date >', upgrades_start)
-			upgrades = []
 
 			# Pad upgrades list with time before upgrade commenced
 			for i in range(0, difference_in_days):

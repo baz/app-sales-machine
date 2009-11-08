@@ -257,7 +257,7 @@ class EmailReport(webapp.RequestHandler):
 			return None
 
 	def send_email(self, pid, subject, email_body):
-		message = mail.EmailMessage(sender=settings.PRODUCTS[pid]['from_address'],
+		message = mail.EmailMessage(sender=settings.SETTINGS['admin_email_address'],
 									subject=subject)
 		message.to = settings.PRODUCTS[pid]['to_addresses']
 		message.html = email_body

@@ -4,13 +4,15 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
+import csv
+import StringIO
 import datetime
 import settings
 import os
 import models.data
 
 
-def fetch_reports(app_name):
+def fetch_reports(app_name, format_date=True):
 	products = settings.PRODUCTS.keys()
 	# Find the product ID for the provided application name
 	found = False
@@ -30,11 +32,11 @@ def fetch_reports(app_name):
 		upgrades.filter('pid =', pid)
 		upgrades.order('-report_date')
 
-		return group_reports({'sales': sales, 'upgrades': upgrades})
+		return group_reports({'sales': sales, 'upgrades': upgrades}, format_date)
 	else:
 		return None
 
-def group_reports(reports):
+def group_reports(reports, format_date=True):
 	if reports != None:
 		# Create dictionary of upgrades for later lookup
 		upgrade_dict = {}
@@ -48,7 +50,8 @@ def group_reports(reports):
 				upgrades = upgrade_dict[sale.report_date]
 			else:
 				upgrades = '-'
-			grouped.append({'date': sale.report_date.strftime('%a, %b %d, %y'), 'profit': sale.income_revenue, 'sales': sale.income_units, 'upgrades': upgrades})
+			report_date = sale.report_date.strftime('%a, %b %d, %y') if format_date else sale.report_date
+			grouped.append({'date': report_date, 'profit': sale.income_revenue, 'sales': sale.income_units, 'upgrades': upgrades})
 		return grouped
 	else:
 		return None
@@ -57,7 +60,17 @@ def group_reports(reports):
 class CSVReport(webapp.RequestHandler):
 
 	def get(self):
-		pass
+		app_name = self.request.path.split('/')[-1]
+		reports = fetch_reports(app_name, False)
+		filename = app_name.replace('.', '_') + '_' + datetime.datetime.now().strftime('%Y%m%d') + '.csv'
+		csv_file = StringIO.StringIO()
+		csv_writer = csv.writer(csv_file, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+		csv_writer.writerow(['Date', 'Profit', 'Sales', 'Upgrades'])
+		for day in reports:
+			csv_writer.writerow([day['date'].strftime('%F'), day['profit'], day['sales'], day['upgrades']])
+		self.response.headers['Content-Type'] = 'text/csv'
+		self.response.out.write(csv_file.getvalue())
+
 
 class HTMLReport(webapp.RequestHandler):
 

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<table border="1">
+	<tr>
+		<th>Date</th>
+		<th>Profit</th>
+		<th>Sales</th>
+		<th>Upgrades</th>
+	</tr>
+	{% for day in reports %}
+		<tr>
+			<td>{{ day.date }}</td>
+			<td>{{ day.profit }}</td>
+			<td>{{ day.sales }}</td>
+			<td>{{ day.upgrades }}</td>
+		</tr>
+	{% endfor %}
+</table>
+
+{% endblock %}

@@ -82,15 +82,14 @@ class RankingsWorker(webapp.RequestHandler):
 								deadline=10,
 								headers=headers)
 
-		pattern = re.compile(r"<.*?viewSoftware\?id=(\d+).*?draggingName=?([^\"]+)?")
-
+		pattern = re.compile(r"buyParams=.+?Id=(\d+)")
 		rankings = pattern.findall(response.content)
-		rankings = rankings[::2]
+
 		rank = 0
 		value = None
 		for app in rankings:
 			rank += 1
-			if int(app[0]) == app_id:
+			if int(app) == app_id:
 				value = rank
 				break
 

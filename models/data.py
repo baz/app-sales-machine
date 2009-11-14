@@ -28,7 +28,7 @@ class AbstractReport(db.Model):
 		pickle.dump(x, f)
 		self._units_by_country = db.Blob(f.getvalue())
    
-	units_by_country = property(lambda self:pickle.load(StringIO.StringIO(self._revenue_by_currency)), _set_units_by_country)
+	units_by_country = property(lambda self:pickle.load(StringIO.StringIO(self._units_by_country)), _set_units_by_country)
 
 
 class Sale(AbstractReport):

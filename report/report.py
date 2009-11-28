@@ -9,10 +9,12 @@ import StringIO
 import datetime
 import settings
 import os
+import urllib
 import models.data
 
 
 def fetch_reports(app_name, format_date=True):
+	app_name = urllib.unquote(app_name)
 	products = settings.PRODUCTS.keys()
 	# Find the product ID for the provided application name
 	found = False

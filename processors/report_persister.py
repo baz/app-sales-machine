@@ -3,6 +3,7 @@ import models.raw_report
 import models.data
 import re
 import settings
+import hashlib
 from processors import report_munger
 
 
@@ -20,12 +21,14 @@ def persist(filename, content):
 
 def persist_original_file(filename, date, content):
 	# Check if the report already exists in the data store
-	existing_report = db.GqlQuery("SELECT * FROM RawReport where report_date = :1 LIMIT 1", date).get()
+	sha1 = hashlib.sha1(content).hexdigest()
+	existing_report = db.GqlQuery("SELECT * FROM RawReport WHERE report_date = :1 AND sha1 = :2 LIMIT 1", date, sha1).get()
 
 	if existing_report == None:
 		report = models.raw_report.RawReport()
 		report.filename = filename
 		report.content = content
+		report.sha1 = sha1
 		report.report_date = date
 		return report.put()
 	else:
@@ -43,21 +46,22 @@ def persist_parsed_data(parsed_data):
 	upgrades = parsed_data[date]['upgrades']
 
 	# Store sale and upgrade data in separate tables
-	sale_store = models.data.Sale()
-	_store_data(sales, sale_store, date)
-	upgrade_store = models.data.Upgrade()
-	_store_data(upgrades, upgrade_store, date)
+	for product in sales:
+		sale_store = models.data.Sale()
+		_store_data(product, sale_store, date)
+		sale_store.put()
 
-	sale_store.put()
-	upgrade_store.put()
+	for product in upgrades:
+		upgrade_store = models.data.Upgrade()
+		_store_data(product, upgrade_store, date)
+		upgrade_store.put()
 
-def _store_data(data, store, date):
-	for product in data:
-		store.income_revenue = float(product['incomeRevenue'])
-		store.income_units = product['incomeUnits']
-		store.revenue_by_currency = product['revenueByCurrency']
-		store.units_by_country = product['unitsByCountry']
-		store.refund_loss = float(product['refundLoss'])
-		store.refund_units = float(product['refundUnits'])
-		store.pid = product['pid']
-		store.report_date = date
+def _store_data(product, store, date):
+	store.income_revenue = float(product['incomeRevenue'])
+	store.income_units = product['incomeUnits']
+	store.revenue_by_currency = product['revenueByCurrency']
+	store.units_by_country = product['unitsByCountry']
+	store.refund_loss = float(product['refundLoss'])
+	store.refund_units = float(product['refundUnits'])
+	store.pid = product['pid']
+	store.report_date = date

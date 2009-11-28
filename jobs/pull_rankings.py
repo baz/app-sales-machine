@@ -18,7 +18,7 @@ class RankingsJob(webapp.RequestHandler):
 			# Queue requests for category rankings
 			self.fetch_rankings(pid, category_id)
 			# Queue requests for top 100 list
-			self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['Top 200'])
+			self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['Top 100'])
 
 	def fetch_rankings(self, pid, category_id):
 		app_id = settings.PRODUCTS[pid]['app_id']

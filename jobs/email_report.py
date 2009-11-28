@@ -202,7 +202,15 @@ class EmailReport(webapp.RequestHandler):
 		# Add vertical labels
 		max_num_vertical_labels = 15
 		overall_chart.left.min = 0
-		overall_chart.left.max = max(upgrades) if max(upgrades) > max(sales) else max(sales)
+
+		max_sales = 0
+		max_upgrades = 0
+		if sales:
+			max_sales = max(sales)
+		if upgrades:
+			max_upgrades = max(upgrades)
+
+		overall_chart.left.max = max_upgrades if max_upgrades > max_sales else max_sales
 		vertical_labels = []
 		segment_gap = overall_chart.left.max / max_num_vertical_labels
 		for i in range(0, max_num_vertical_labels + 1):

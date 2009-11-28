@@ -10,16 +10,21 @@ SETTINGS = {
 	# Currency you would like your daily income revenue figures to be converted to
 	"base_currency": "AUD",
 
-	# Your iTunes Connect credentials for the cron job to log in and download your reports daily
-	"itunesconnect_username": "<<username>>",
-	"itunesconnect_password": "<<password>>",
-
 	# This must be the email address of a registered administrator for the application due to mail API restrictions
 	"admin_email_address": "My Name <sender@example.com>",
 	
 	# Don't change these
 	"template_path": APP_ROOT_DIR + '/templates/',
 	"upload_form_name": "file_upload",
+}
+
+ACCOUNTS = {
+	# Your iTunes Connect credentials for the cron job to log in and download your reports daily
+	# You can specify more than 1 account
+	"<< Arbitrary account name >>": {
+		"itunesconnect_username": "<<username>>",
+		"itunesconnect_password": "<<password>>",
+	}
 }
 
 PRODUCTS = {

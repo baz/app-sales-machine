@@ -4,6 +4,7 @@ import datetime
 import StringIO
 import csv, decimal
 import xml.dom.minidom	#Used for currency converter
+from google.appengine.api import urlfetch
 
 # Munging code taken and modified from http://www.rogueamoeba.com/utm/2009/05/04/itunesconnectarchiver/
 # Thanks RA!
@@ -133,9 +134,10 @@ class XavierMediaCurrencyConverter(object):
 			#We do little error checking here, because I'm not really in the mood to be paranoid
 			#Should just wrap it in giant try: block at some point
 
-			socket = urllib2.urlopen( 'http://api.finance.xaviermedia.com/api/latest.xml' )
-			xmlData = socket.read()
-			socket.close()
+			response = urlfetch.fetch(url='http://api.finance.xaviermedia.com/api/latest.xml',
+							 method=urlfetch.GET,
+							 deadline=10)
+			xmlData = response.content
 
 			xmlTree = xml.dom.minidom.parseString( xmlData )
 			baseCurrency = xmlTree.getElementsByTagName('basecurrency')[0].firstChild.data

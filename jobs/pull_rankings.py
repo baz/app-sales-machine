@@ -14,11 +14,15 @@ class RankingsJob(webapp.RequestHandler):
 
 	def get(self):
 		for pid in settings.PRODUCTS:
-			category_id = jobs.app_store_codes.CATEGORIES[settings.PRODUCTS[pid]['category_name']]
+			paid = settings.PRODUCTS[pid]['paid']
+			category = jobs.app_store_codes.CATEGORIES[settings.PRODUCTS[pid]['category_name']]
+			if 'popId' not in category:
+				category['popId'] = 30 if paid else 27
 			# Queue requests for category rankings
-			self.fetch_rankings(pid, category_id)
+			self.fetch_rankings(pid, category)
+
 			# Queue requests for top 100 list
-			if settings.PRODUCTS[pid]['paid']:
+			if paid:
 				self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['Top 100 Paid'])
 				# Queue requests for top grossing list
 				self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['Top Grossing'])
@@ -27,7 +31,6 @@ class RankingsJob(webapp.RequestHandler):
 
 	def fetch_rankings(self, pid, category):
 		app_id = settings.PRODUCTS[pid]['app_id']
-		paid = settings.PRODUCTS[pid]['paid']
 
 		# Fetch ranking in each country for the application's category
 		# Break into queued tasks for offline, asychronous processing
@@ -47,7 +50,6 @@ class RankingsJob(webapp.RequestHandler):
 										'store_ids': ','.join(map(str, store_ids_to_process)),
 										'category_id': category['id'],
 										'pop_id': category['popId'],
-										'paid': int(paid),
 										})
 				store_ids_to_process = []
 
@@ -66,16 +68,15 @@ class RankingsWorker(webapp.RequestHandler):
 		store_ids = string.split(self.request.get('store_ids'), ',')
 		category_id = int(self.request.get('category_id'))
 		pop_id = int(self.request.get('pop_id'))
-		paid = int(self.request.get('paid'))
 
 		for store_id in store_ids:
-			ranking = self.category_ranking(app_id, int(store_id), category_id, pop_id, paid)
+			ranking = self.category_ranking(app_id, int(store_id), category_id, pop_id)
 
 			if ranking != None:
 				# Store this ranking
 				ranking_persister.persist_ranking(pid, ranking, jobs.app_store_codes.COUNTRIES[int(store_id)], self._category_for_id(category_id))
 
-	def category_ranking(self, app_id, store_id, category_id, pop_id, paid):
+	def category_ranking(self, app_id, store_id, category_id, pop_id):
 		# Append the store id to the URL because GAE caches the request otherwise
 		url = "http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewTop?id=%d&popId=%d&%d" % (category_id, pop_id, store_id)
 		user_agent = "iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2"

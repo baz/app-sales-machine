@@ -11,9 +11,10 @@ CATEGORIES = {
 									"id": 25211,
 									"popId": 38,
 								},
+		# No need to specify the popId key for all other categories
+		# popId will be determined by pull_rankings.py
 		"Lifestyle"				: {
 									"id": 25203,
-									"popId": 30,
 								},
 		}
 COUNTRIES = {

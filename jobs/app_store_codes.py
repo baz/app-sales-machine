@@ -1,6 +1,20 @@
 CATEGORIES = {
-		"Top 100"				:25211,
-		"Lifestyle"				:25203,
+		"Top 100 Free"			: {
+									"id": 25211,
+									"popId": 27,
+								},
+		"Top 100 Paid"			: {
+									"id": 25211,
+									"popId": 30,
+								},
+		"Top Grossing"			: {
+									"id": 25211,
+									"popId": 38,
+								},
+		"Lifestyle"				: {
+									"id": 25203,
+									"popId": 30,
+								},
 		}
 COUNTRIES = {
 		143441 :"United States",

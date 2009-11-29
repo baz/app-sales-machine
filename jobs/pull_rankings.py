@@ -74,7 +74,7 @@ class RankingsWorker(webapp.RequestHandler):
 
 			if ranking != None:
 				# Store this ranking
-				ranking_persister.persist_ranking(pid, ranking, jobs.app_store_codes.COUNTRIES[int(store_id)], self._category_for_id(category_id))
+				ranking_persister.persist_ranking(pid, ranking, jobs.app_store_codes.COUNTRIES[int(store_id)], self._category_name(category_id, pop_id))
 
 	def category_ranking(self, app_id, store_id, category_id, pop_id):
 		# Append the store id to the URL because GAE caches the request otherwise
@@ -103,11 +103,24 @@ class RankingsWorker(webapp.RequestHandler):
 
 		return value
 
-	def _category_for_id(self, category_id):
-		for key, value in jobs.app_store_codes.CATEGORIES.items():
-			if value == category_id:
-				return key
-		return None
+	def _category_name(self, category_id, pop_id, pop_id_search=False):
+		i = 0
+		category_name = None
+		for name, category in jobs.app_store_codes.CATEGORIES.items():
+			if pop_id_search:
+				if category['id'] == category_id and category['popId'] == pop_id:
+					category_name = name
+					break
+			else:
+				if category['id'] == category_id:
+					i += 1
+					category_name = name
+
+		if i > 1:
+			# There is more than 1 category with the same id, so differentiate by popId as well
+			return self._category_name(category_id, pop_id, True)
+
+		return category_name
 
 
 def main():

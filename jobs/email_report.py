@@ -110,7 +110,7 @@ class EmailReport(webapp.RequestHandler):
 					'sales_start': self._date_string(sales_start),
 					'sales_end': self._date_string(sales_end),
 					'sales_total': self._format_number(sales_total),
-					'sales_total_revenue': sales_total_revenue,
+					'sales_total_revenue': round(sales_total_revenue, 2),
 					'upgrades_start': self._date_string(upgrades_start),
 					'upgrades_end': self._date_string(upgrades_end),
 					'upgrades_total': self._format_number(upgrades_total),

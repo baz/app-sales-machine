@@ -14,11 +14,13 @@
 	<p>Total number of sales ({{ sales_start }} to {{ sales_end }}):</p>
 	<p> - <b>{{ sales_total }}</b></p>
 
-	<p>Total number of upgrades ({{ upgrades_start }} to {{ upgrades_end }}):</p>
-	<p> - <b>{{ upgrades_total }}</b></p>
+	{% ifnotequal upgrades_total '0' %}
+		<p>Total number of upgrades ({{ upgrades_start }} to {{ upgrades_end }}):</p>
+		<p> - <b>{{ upgrades_total }}</b></p>
 
-	<p>Upgrade rate (over base of {{ upgrade_base }}):</p>
-	<p> - <b>{{ upgrade_rate }}</b></p>
+		<p>Upgrade rate (over base of {{ upgrade_base }}):</p>
+		<p> - <b>{{ upgrade_rate }}</b></p>
+	{% endifnotequal %}
 
 	<p>Approximate total income revenue ({{ currency }}):</p>
 	<p> - <b>${{ sales_total_revenue }}</b></p>

@@ -64,7 +64,6 @@ class CSVReport(webapp.RequestHandler):
 	def get(self):
 		app_name = self.request.path.split('/')[-1]
 		reports = fetch_reports(app_name, False)
-		filename = app_name.replace('.', '_') + '_' + datetime.datetime.now().strftime('%Y%m%d') + '.csv'
 		csv_file = StringIO.StringIO()
 		csv_writer = csv.writer(csv_file, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 		csv_writer.writerow(['Date', 'Profit', 'Sales', 'Upgrades'])

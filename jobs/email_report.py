@@ -244,7 +244,14 @@ class EmailReport(webapp.RequestHandler):
 				concentrated_chart.AddLine(upgrades_concentrated, width=line_chart.LineStyle.THICK, label='Upgrades')
 
 			concentrated_chart.left.min = 0
-			concentrated_chart.left.max = max(upgrades_concentrated) if max(upgrades_concentrated) > max(sales_concentrated) else max(sales_concentrated)
+			max_upgrades_concentrated = 0
+			max_sales_concentrated = 0
+			if upgrades_concentrated:
+				max_upgrades_concentrated = max(upgrades_concentrated)
+			if sales_concentrated:
+				max_sales_concentrated = max(sales_concentrated)
+
+			concentrated_chart.left.max = max_upgrades_concentrated if max_upgrades_concentrated > max_sales_concentrated else max_sales_concentrated
 			segment_gap = concentrated_chart.left.max / concentrated_result_set_num
 			concentrated_vertical_labels = []
 

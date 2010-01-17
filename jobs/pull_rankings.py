@@ -16,8 +16,12 @@ class RankingsJob(webapp.RequestHandler):
 		for pid in settings.PRODUCTS:
 			paid = settings.PRODUCTS[pid]['paid']
 			category = jobs.app_store_codes.CATEGORIES[settings.PRODUCTS[pid]['category_name']]
+
 			if 'popId' not in category:
-				category['popId'] = 30 if paid else 27
+				new_category = {}
+				new_category['popId'] = 30 if paid else 27
+				new_category['id'] = category['id']
+				category = new_category
 			# Queue requests for category rankings
 			self.fetch_rankings(pid, category)
 

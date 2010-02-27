@@ -75,8 +75,10 @@ class EmailReport(webapp.RequestHandler):
 					upgrade_base = self._total_income_units(sales_query_asc)
 					if upgrade_base == 0: upgrade_base = sales_total
 				else:
-					# There are more than 2 release so the best we can do is calculate an upgrade rate over all downloads
+					# There are more than two release so the best we can do is calculate an upgrade rate over all downloads
 					upgrade_base = sales_total
+					# Set upgrades start date to second release
+					upgrades_start = settings.PRODUCTS[pid]['versions'][1]['date']
 
 				if upgrade_base > 0:
 					upgrade_rate = (1.0 * upgrades_total / upgrade_base) * 100

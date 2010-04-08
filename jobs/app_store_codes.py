@@ -1,21 +1,41 @@
 CATEGORIES = {
 		"Top 100 Free"			: {
-									"id": 25211,
+									"id": 25204,
 									"popId": 27,
+                                                                        "genreId": 36
 								},
 		"Top 100 Paid"			: {
-									"id": 25211,
+									"id": 25204,
 									"popId": 30,
+                                                                        "genreId": 36
 								},
 		"Top Grossing"			: {
-									"id": 25211,
+									"id": 25204,
 									"popId": 38,
+                                                                        "genreId": 36
+								},
+		"iPad Top 100 Paid"			: {
+									"id": 25204,
+									"popId": 47,
+                                                                        "genreId": 36
+								},
+		"iPad Top 100 Free"			: {
+									"id": 25204,
+									"popId": 44,
+                                                                        "genreId": 36
+								},
+
+		"iPad Top 100 Grossing"			: {
+									"id": 25204,
+									"popId": 46,
+                                                                        "genreId": 36
 								},
 		# No need to specify the popId key for all other categories
 		# popId will be determined by pull_rankings.py
-		"Lifestyle"				: {
-									"id": 25203,
-								},
+                "Games"				: {
+									"id": 25180,
+                                                                        "genreId": 6014
+								}
 		}
 COUNTRIES = {
 		143441 :"United States",

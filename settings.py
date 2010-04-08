@@ -41,6 +41,9 @@ PRODUCTS = {
 
 		# Is your app free?
 		"paid": False,
+		
+		# Is your app for iPhone or iPad?
+		"iPad": False,
 
 		# List of dictionaries which represent the human-readable version number and the date the version was released on the App Store
 		"versions": [{'name': 'v1.0', 'date': datetime.date(2009, 6, 22)},

@@ -1,40 +1,36 @@
 CATEGORIES = {
 		"Top 100 Free"			: {
-									"id": 25204,
 									"popId": 27,
-                                                                        "genreId": 36
+									"genreId": 36
 								},
 		"Top 100 Paid"			: {
-									"id": 25204,
 									"popId": 30,
-                                                                        "genreId": 36
+									"genreId": 36
 								},
 		"Top Grossing"			: {
-									"id": 25204,
 									"popId": 38,
-                                                                        "genreId": 36
+									"genreId": 36
 								},
-		"iPad Top 100 Paid"			: {
-									"id": 25204,
+		"iPad Top 100 Paid"		: {
 									"popId": 47,
-                                                                        "genreId": 36
+									"genreId": 36
 								},
-		"iPad Top 100 Free"			: {
-									"id": 25204,
+		"iPad Top 100 Free"		: {
 									"popId": 44,
-                                                                        "genreId": 36
+									"genreId": 36
 								},
 
-		"iPad Top 100 Grossing"			: {
-									"id": 25204,
+		"iPad Top 100 Grossing"	: {
 									"popId": 46,
-                                                                        "genreId": 36
+									"genreId": 36
 								},
 		# No need to specify the popId key for all other categories
 		# popId will be determined by pull_rankings.py
-                "Games"				: {
-									"id": 25180,
-                                                                        "genreId": 6014
+				"Games"			: {
+									"genreId": 6014
+								},
+				"Lifestyle"		: {
+									"genreId": 6012
 								}
 		}
 COUNTRIES = {
@@ -101,7 +97,7 @@ COUNTRIES = {
 		143471 :"Vietnam",
 		143462 :"Japan",
 		143508 :"Dominican Republic",
-		143509 :'Ecuador',              
+		143509 :'Ecuador',
 		143516 :'Egypt',
 		143518 :'Estonia',
 		143510 :'Honduras',

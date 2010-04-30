@@ -34,7 +34,7 @@ class RankingsJob(webapp.RequestHandler):
 				if paid:
 					self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['iPad Top 100 Paid'])
 					# Queue requests for top grossing list
-					self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['iPad Top Grossing'])
+					self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['iPad Top 100 Grossing'])
 				else:
 					self.fetch_rankings(pid, jobs.app_store_codes.CATEGORIES['iPad Top 100 Free'])
 			else:
@@ -57,7 +57,7 @@ class RankingsJob(webapp.RequestHandler):
 		for store_id in jobs.app_store_codes.COUNTRIES:
 			count += 1
 			store_ids_to_process.append(store_id)
-			if self._is_int(1.0 * count / countries_per_task):
+			if count % countries_per_task == 0 or count == len(jobs.app_store_codes.COUNTRIES):
 				# Enqueue task and reset list
 				taskqueue.add(url='/jobs/pull_rankings/worker',
 								method='POST',

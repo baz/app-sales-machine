@@ -71,10 +71,11 @@ class AppStoreSalesDataMunger(object):
 			if row[0] != 'APPLE':
 				continue
 
+			print row
 			rowFields = {}
 			rowFields['productID']		= row[2]
 			rowFields['date']			= time.strptime( row[11], '%m/%d/%Y' )
-			rowFields['salesType']		= int(row[8], 16)
+			rowFields['salesType']		= int(row[8][0], 16)
 			rowFields['units']			= int(row[9])
 
 			rowFields['buyerCurrencyType']		= row[15]

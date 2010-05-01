@@ -7,7 +7,7 @@ import cgi
 import tarfile
 import settings
 from processors import report_persister
-
+from chart import SalesChart
 
 PAGE_NAME = 'Admin'
 TEMPLATE_PATH = os.path.join(settings.SETTINGS['template_path'], 'admin.html')
@@ -46,3 +46,12 @@ class UploadHandler(webapp.RequestHandler):
 			}
 
 		self.response.out.write(template.render(TEMPLATE_PATH, template_values))
+
+class ChartHandler(webapp.RequestHandler):
+	def get(self):
+		pid = self.request.get("pid", None)
+		if not pid:
+			return
+		overall_chart_url, concentrated_chart_url = SalesChart().units_chart(pid)
+
+		self.response.out.write("<img src='%s'/>" % overall_chart_url)

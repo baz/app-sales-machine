@@ -13,4 +13,12 @@
 		<input type="submit" value="Upload" />
 	</form>
 
+	{% if imported_date %}
+		<h3>Sucessfully imported: {{ imported_date}}</h3>
+	{% endif %}
+	<form action="/jobs/pull_report" method="get">
+		<input type="text" name="date"/>
+		<input type="submit" value="Import"/>
+	</form>
+
 {% endblock %}
